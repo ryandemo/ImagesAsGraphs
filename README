@@ -1,0 +1,94 @@
+Sara Cronin
+JHED: scronin2
+scronin2@jhu.edu
+
+Ryan Demo
+JHED: rdemo1
+rdemo1@jhu.edu
+
+Henrik Schuh
+JHED: hschuh2
+hschuh@jhu.edu
+
+600.226.01 | CS226 Data Structures | Section 1
+Project 4
+
+
+*********************************************************************
+Included Source Files
+*********************************************************************
+Distance.java: (p4c) interface for distance calculation between two objects
+
+GVertex.java: (p4a) Vertex class extension using templating
+
+P4C.java: (p4c) executes program as required in p4c
+
+Partition.java: (p4b) implementation of tree-based set partitions with fast union/find
+
+Pixel.java: (p4c) Alpha-RGB pixel data type implementation for P4C
+
+PixelDistance.java: (p4c) implementation for distance calculation between two Pixel objects
+
+PQHeap.java: (p4b) PQHeap implementation using an ArrayList
+
+PQHeapTest.java: (p4b) JUnit test suite for a max PQHeap
+
+PriorityQueue.java: (p4b) ADT interface for a general priority queue of ordered values
+
+QueueEmptyException.java: (p4b) Exception class for empty queues
+
+Vertex.java: (p4a) class to represent a value-comparable vertex in a graph
+
+WEdge.java: (p4a) implementation of a weighted, undirected edge class (for graphs)
+
+WGraph.java: (p4a) interface for a weighted undirected graph
+
+WGraphP4.java: (p4a) implementation for a weighted undirected graph
+
+WGraphTest.java: (p4a) JUnit test suite for a weighted undirected graph
+
+***[Test images to run the algorithm on are included as well]
+
+
+*********************************************************************
+Part A: Graph Implementation
+*********************************************************************
+Discuss your process for implementing this part of the assignment, including which team members worked on which classes and tests, and why you chose that particular approach in your README file for this assignment.
+
+First, we simply made Vertex generic through GVertex and made WEdge suitable for a weighted edge with a weight value, and making it comparable. We implemented WGraphP4 by using an ArrayList of GVertex objects and an ArrayList of ArrayLists of WEdge<VT> objects. For each GVertex u to GVertex v edge created, the implementation creates two directed edges. When returning the numEdges(), it returns the number of undirected edges (numDirectedEdges/2). Each add operation checks if the vertex array vertex at index of the passed vertex’s ID isn’t null to see if the vertex is already in the graph. Each vertex in the vertex array has a corresponding ArrayList of edges in the edges array at the same index. In this way, the ArrayLists function like a HashTable, except there is no need to hash anything because the indices are the same. The get operations are constant time and very quick because of this. Deleting an edge between two vertices deletes both directed edges. We implemented the kruskals() function during our writing of part C.
+
+Initially, we broke up the assignments so that each person would do one of the three parts of part A. Henry wrote GVertex.java, Sara wrote WEdge.java, and Ryan wrote WGraph.java. Henry and Sara wrote their implementations, pushed to Bitbucket, then Ryan utilized the classes they wrote and the example GraphAdjMatrix.java to implement WGraphP4. In implementing WGraph, Ryan debugged Henry and Sara’s code, fixing any compiler warnings due to generics. Sara then wrote the WGraphTest, with Henry and Ryan assisting or adding parts as necessary. Sara also combined each group member’s PQHeapTest.java into one long test suite, so each person contributed equally to the content of that test suite. Henry and Sara wrote P4C, helping debug Ryan’s WGraphP4 as they went along. Ryan wrote the Pixel class. Ryan then tested P4C and helped debug, got rid of compiler warnings, and made the entire project checkstyle compliant.
+
+We chose this approach somewhat as we went along, so that the work was fairly evenly distributed and so we could work around team member’s schedules. We broke up each of the individual parts A-C, so that whoever wrote the major class for the part could implicitly debug any of its dependencies. Sara is very proficient at JUnit tests, so she wrote and/or compiled the majority of them. While each member would write classes for the most part by themselves (except for P4C), they were tested by everyone else in writing a dependent class or in JUnit tests. This way, each class was written coherently and by one person, so the idea for the implementation was consistent. But by breaking up the work in this way, we could all help debug once that was finished, as well as familiarize ourselves with the code other team members wrote.
+
+Compiler note: our only compiler warnings in the project are in P4C, where we create an array of GVertex<Pixel>, for raw type and unchecked conversion in the initialization. This is expected because Java's arrays contain information about its component type at runtime. Since we don’t know what T is at runtime, we can’t create the array of generics. In the implementation this has no effect; it’s just a compiler warning.
+
+
+*********************************************************************
+Part C: Images as Graphs
+*********************************************************************
+What was awkward with respect to the original WGraph interface when using it to solve part C? How would you have liked to change it?
+What k values worked for certain images you tested with? What challenges did you encounter in part C in particular?
+Where is your solution the slowest and why? Could you have done things differently to improve this?
+
+The WGraph interface was awkward to work with when reading the pixels of an into a graph, because there was no efficient way to get already-inserted vertices to add an edge. Therefore in order to add edges to the adjacent pixels, it was necessary to initialize all vertices into a 2D array before inserting them into the graph. This could have been improved by adding a method to get vertices by ID (in constant-time complexity).
+
+A second awkward aspect was the handling of ID values. After running the segmenter function on a graph, it was not possible to simply create a new graph out of the returned edge list, because the IDs of the vertices were no longer sequential. To overcome this issue, the same graph was used, removing all edges not part of the segmented edge list. However, this issue could also have been handled by not relying on integer IDs.
+
+Implementing the difference condition for segmentation was the most difficult aspect of Part C, because in order to compute the differences, minimum and maximum values for each subset must be kept track of. Since the Partition object itself stores only indices and no actual data, this needed to be maintained externally within the segmenter function.
+
+
+Effective K values varied significantly based on the image used, since the contrast between segments in the different sample images was not consistent. The following K values worked best for each corresponding test image:
+
+Image                K
+Stripe.png           50
+BlackSquare.png      50
+BWTest.png           50
+Edges.png            50
+JHULogo.png          100
+Test1-4.png          100
+
+Images with fuzziness, gradients or soft boundaries between different-colored components were difficult to segment effectively. Some images, like JHULogo.png, created many small components since the boundaries between different colors were not sharply defined.
+
+The slowest part of the segmentation process is loading the BufferedImage object into the graph. While the process has O(N) time complexity, where N is the number of pixels, it is slow to complete because a Pixel object, GVertex object, and up to two Edge objects must be created for each pixel. The O(N) time bound also depends on BufferedImage.getRGB(x,y) to be constant-time. The efficiency of this process benefits from using ArrayLists in the Graph implementation, in order to have constant-time index lookup operations. However, efficiency could be further improved by avoiding the intermediate step of creating a 2D GVertex array, although this would require changes to the WGraphP4 class that do not conform to the Graph ADT.
+
